@@ -205,13 +205,14 @@ void SettingSetDate::CheckDay() {
 }
 //SettingSetTime
 void SettingSetDate::UpdateScreen() {
-  if (settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-    if (hourCounter.GetValue() >= 12) {
-      lv_label_set_text_static(lblampm, "PM");
-    } else {
-      lv_label_set_text_static(lblampm, "AM");
-    }
-  }
+//  if (settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
+//    if (hourCounter.GetValue() >= 12) {
+//      lv_label_set_text_static(lblampm, "PM");
+//    } else {
+//      lv_label_set_text_static(lblampm, "AM");
+//    }
+//  }
+  lv_label_set_text_static(lblampm, "AM");
   lv_obj_set_state(btnSetTime, LV_STATE_DEFAULT);
   lv_obj_set_state(lblSetTime, LV_STATE_DEFAULT);
 }
