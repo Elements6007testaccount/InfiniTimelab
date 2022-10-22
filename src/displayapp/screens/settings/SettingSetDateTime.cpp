@@ -1,4 +1,4 @@
-#include "displayapp/screens/settings/SettingSetDate.h"
+#include "displayapp/screens/settings/SettingSetDateTime.h"
 #include <lvgl/lvgl.h>
 #include <hal/nrf_rtc.h>
 #include <nrf_log.h>
@@ -19,14 +19,14 @@ namespace {
   constexpr int16_t POS_Y_TEXT = -6;
 
   void event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<SettingSetDate*>(obj->user_data);
+    auto* screen = static_cast<SettingSetDateTime*>(obj->user_data);
     if (event == LV_EVENT_CLICKED) {
       screen->HandleButtonPress();
     }
   }
 
   void ValueChangedHandler(void* userData) {
-    auto* screen = static_cast<SettingSetDate*>(userData);
+    auto* screen = static_cast<SettingSetDateTime*>(userData);
     screen->CheckDay();
     //SettingSetTime
     screen->UpdateScreen();
@@ -53,19 +53,19 @@ namespace {
   constexpr int16_t POS_Y_TEXTD = -7;
 
   void SetTimeEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<SettingSetDate*>(obj->user_data);
-    if (event == LV_EVENT_CLICKED) {
-      screen->SetTime();
+     auto* screen = static_cast<SettingSetDateTime*>(obj->user_data);
+     if (event == LV_EVENT_CLICKED) {
+     screen->SetTime();
     }
   }
 }
 
 
-bool SettingSetDate::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
+bool SettingSetDateTime::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   return screens.OnTouchEvent(event);
 }
 
-SettingSetDate::SettingSetDate(Pinetime::Applications::DisplayApp* app, Pinetime::Controllers::DateTime& dateTimeController,
+SettingSetDateTime::SettingSetDateTime(Pinetime::Applications::DisplayApp* app, Pinetime::Controllers::DateTime& dateTimeController,
                                Pinetime::Controllers::Settings& settingsController)
   : Screen(app), dateTimeController {dateTimeController}, settingsController {settingsController}, screens {app,
              0,
@@ -78,7 +78,7 @@ SettingSetDate::SettingSetDate(Pinetime::Applications::DisplayApp* app, Pinetime
              Screens::ScreenListModes::UpDown} {
 }  
 
-std::unique_ptr<Screen> SettingSetDate::CreateScreen1() {
+std::unique_ptr<Screen> SettingSetDateTime::CreateScreen1() {
 
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current date");
@@ -108,12 +108,12 @@ std::unique_ptr<Screen> SettingSetDate::CreateScreen1() {
   yearCounter.SetValue(dateTimeController.Year());
   lv_obj_align(yearCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_YEAR, POS_Y_TEXT);
 
-  btnSetTime = lv_btn_create(lv_scr_act(), nullptr);
-  btnSetTime->user_data = this;
+  btnSetDate = lv_btn_create(lv_scr_act(), nullptr);
+  btnSetDate->user_data = this;
   lv_obj_set_size(btnSetDate, 120, 48);
   lv_obj_align(btnSetDate, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, 0);
-  lv_obj_set_style_local_bg_color(btnSetTime, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x38, 0x38, 0x38));
-  lblSetTime = lv_label_create(btnSetTime, nullptr);
+  lv_obj_set_style_local_bg_color(btnSetDate, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x38, 0x38, 0x38));
+  lblSetDate = lv_label_create(btnSetDate, nullptr);
   lv_label_set_text_static(lblSetDate, "Set");
   lv_obj_set_event_cb(btnSetDate, event_handler);
   lv_btn_set_state(btnSetDate, LV_BTN_STATE_DISABLED);
@@ -122,8 +122,13 @@ std::unique_ptr<Screen> SettingSetDate::CreateScreen1() {
   return std::make_unique<Screens::Label>(0, 2, app, title);
 
 }
-//Screen two    SettingSetDate
-std::unique_ptr<Screen> SettingSetDate::CreateScreen2() {
+
+SettingSetDateTime::~SettingSetDateTime() {
+  lv_obj_clean(lv_scr_act());
+}
+
+//Screen two    SettingSetTime
+std::unique_ptr<Screen> SettingSetDateTime::CreateScreen2() {
  
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current time");
@@ -176,7 +181,7 @@ std::unique_ptr<Screen> SettingSetDate::CreateScreen2() {
   return std::make_unique<Screens::Label>(1, 2, app, title);
 }
 
-void SettingSetDate::HandleButtonPress() {
+void SettingSetDateTime::HandleButtonPress() {
   const uint16_t yearValue = yearCounter.GetValue();
   const uint8_t monthValue = monthCounter.GetValue();
   const uint8_t dayValue = dayCounter.GetValue();
@@ -193,42 +198,37 @@ void SettingSetDate::HandleButtonPress() {
   lv_obj_set_state(lblSetDate, LV_STATE_DISABLED);
 }
 
-SettingSetDate::~SettingSetDate() {
-  lv_obj_clean(lv_scr_act());
-}
-
-void SettingSetDate::CheckDay() {
+void SettingSetDateTime::CheckDay() {
   const int maxDay = MaximumDayOfMonth(monthCounter.GetValue(), yearCounter.GetValue());
   dayCounter.SetMax(maxDay);
   lv_btn_set_state(btnSetDate, LV_BTN_STATE_RELEASED);
   lv_obj_set_state(lblSetDate, LV_STATE_DEFAULT);
 }
 //SettingSetTime
-void SettingSetDate::UpdateScreen() {
-//  if (settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-//    if (hourCounter.GetValue() >= 12) {
-//      lv_label_set_text_static(lblampm, "PM");
-//    } else {
-//      lv_label_set_text_static(lblampm, "AM");
-//    }
-//  }
-  lv_label_set_text_static(lblampm, "AM");
+void SettingSetDateTime::UpdateScreen() {
+  if (settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
+    if (hourCounter.GetValue() >= 12) {
+      lv_label_set_text_static(lblampm, "PM");
+    } else {
+      lv_label_set_text_static(lblampm, "AM");
+    }
+  }
   lv_obj_set_state(btnSetTime, LV_STATE_DEFAULT);
   lv_obj_set_state(lblSetTime, LV_STATE_DEFAULT);
 }
 
-void SettingSetDate::SetTime() {
+void SettingSetDateTime::SetTime() {
   const int hoursValue = hourCounter.GetValue();
   const int minutesValue = minuteCounter.GetValue();
-//  NRF_LOG_INFO("Setting time (manually) to %02d:%02d:00", hoursValue, minutesValue);
-//  dateTimeController.SetTime(dateTimeController.Year(),
-//                             static_cast<uint8_t>(dateTimeController.Month()),
-//                             dateTimeController.Day(),
-//                             static_cast<uint8_t>(dateTimeController.DayOfWeek()),
-//                             static_cast<uint8_t>(hoursValue),
-//                             static_cast<uint8_t>(minutesValue),
-//                             0,
-//                             nrf_rtc_counter_get(portNRF_RTC_REG));
+  NRF_LOG_INFO("Setting time (manually) to %02d:%02d:00", hoursValue, minutesValue);
+  dateTimeController.SetTime(dateTimeController.Year(),
+                             static_cast<uint8_t>(dateTimeController.Month()),
+                             dateTimeController.Day(),
+                             static_cast<uint8_t>(dateTimeController.DayOfWeek()),
+                             static_cast<uint8_t>(hoursValue),
+                             static_cast<uint8_t>(minutesValue),
+                             0,
+                             nrf_rtc_counter_get(portNRF_RTC_REG));
   lv_obj_set_state(btnSetTime, LV_STATE_DISABLED);
   lv_obj_set_state(lblSetTime, LV_STATE_DISABLED);
 }

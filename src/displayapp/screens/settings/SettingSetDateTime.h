@@ -12,11 +12,11 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class SettingSetDate : public Screen {
+      class SettingSetDateTime : public Screen {
       public:
-        SettingSetDate(DisplayApp* app, Pinetime::Controllers::DateTime& dateTimeController,
+        SettingSetDateTime(DisplayApp* app, Pinetime::Controllers::DateTime& dateTimeController,
         Pinetime::Controllers::Settings& settingsController);
-        ~SettingSetDate() override;
+        ~SettingSetDateTime() override;
 
         bool OnTouchEvent(TouchEvents event) override;
         //SettingSetDate void
