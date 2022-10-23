@@ -25,11 +25,9 @@ namespace {
     }
   }
 
-  void ValueChangedHandler(void* userData) {
+  void DateValueChangedHandler(void* userData) {
     auto* screen = static_cast<SettingSetDateTime*>(userData);
     screen->CheckDay();
-    //SettingSetTime
-    screen->UpdateScreen();
   }
 
   int MaximumDayOfMonth(uint8_t month, uint16_t year) {
@@ -58,7 +56,14 @@ namespace {
      screen->SetTime();
     }
   }
+
+  void TimeValueChangedHandler(void* userData) {
+    auto* screen = static_cast<SettingSetDateTime*>(userData);
+    screen->UpdateScreen();
+  }
 }
+
+
 
 
 bool SettingSetDateTime::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
@@ -92,18 +97,18 @@ std::unique_ptr<Screen> SettingSetDateTime::CreateScreen1() {
   lv_label_set_align(icon, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(icon, title, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
-  dayCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
+  dayCounter.SetValueChangedEventCallback(this, DateValueChangedHandler);
   dayCounter.Create();
   dayCounter.SetValue(dateTimeController.Day());
   lv_obj_align(dayCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_DAY, POS_Y_TEXT);
 
   monthCounter.EnableMonthMode();
-  monthCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
+  monthCounter.SetValueChangedEventCallback(this, DateValueChangedHandler);
   monthCounter.Create();
   monthCounter.SetValue(static_cast<int>(dateTimeController.Month()));
   lv_obj_align(monthCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_MONTH, POS_Y_TEXT);
 
-  yearCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
+  yearCounter.SetValueChangedEventCallback(this, DateValueChangedHandler);
   yearCounter.Create();
   yearCounter.SetValue(dateTimeController.Year());
   lv_obj_align(yearCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_YEAR, POS_Y_TEXT);
@@ -152,12 +157,12 @@ std::unique_ptr<Screen> SettingSetDateTime::CreateScreen2() {
   }
   hourCounter.SetValue(dateTimeController.Hours());
   lv_obj_align(hourCounter.GetObject(), nullptr, LV_ALIGN_CENTER, -75, POS_Y_TEXTD);
-  hourCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
+  hourCounter.SetValueChangedEventCallback(this, TimeValueChangedHandler);
 
   minuteCounter.Create();
   minuteCounter.SetValue(dateTimeController.Minutes());
   lv_obj_align(minuteCounter.GetObject(), nullptr, LV_ALIGN_CENTER, 0, POS_Y_TEXTD);
-  minuteCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
+  minuteCounter.SetValueChangedEventCallback(this, TimeValueChangedHandler);
 
   lblampm = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(lblampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
@@ -232,4 +237,3 @@ void SettingSetDateTime::SetTime() {
   lv_obj_set_state(btnSetTime, LV_STATE_DISABLED);
   lv_obj_set_state(lblSetTime, LV_STATE_DISABLED);
 }
-
